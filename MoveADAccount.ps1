@@ -10,14 +10,24 @@ import-module ActiveDirectory
 
 $accounts = Import-Csv ("C:\temp\accounts.csv")
 Foreach($pc in $accounts.comps){
-Disable-ADAccount -Identity "$pc"
-Get-ADComputer -Identity "$pc" | select DistinguishedName >> C:\Temp\OriginalOU.csv 
-Get-ADComputer -Identity "$pc" | Move-ADObject -TargetPath "OU=PC Destination,OU=Computers,DC=Domain,DC=com"
-Write-Host("$pc has been disabled and moved to the PC Destination Devices OU")
+    try{
+        Disable-ADAccount -Identity "$pc"
+        Get-ADComputer -Identity "$pc" | Select-Object DistinguishedName >> C:\Temp\OriginalOU.csv 
+        Get-ADComputer -Identity "$pc" | Move-ADObject -TargetPath "OU=PC Destination,OU=Computers,DC=Domain,DC=com"
+        Write-Host("$pc has been disabled and moved to the PC Destination Devices OU")
+    }
+    catch{
+        "$pc does not exist in Active Directory"
+    }
 }
 foreach($user in $accounts.users){
-Disable-ADAccount -Identity $user
-Get-ADUser -Identity "$user" | select DistinguishedName >> C:\Temp\OriginalOU.csv
-Get-ADUser -Identity "$user" | Move-ADObject -TargetPath "OU=User Destination,OU=Computers,DC=Domain,DC=com"
-Write-Host("$user has been disabled and moved to the User Destination OU")
+    try{
+        Disable-ADAccount -Identity $user
+        Get-ADUser -Identity "$user" | Select-Object DistinguishedName >> C:\Temp\OriginalOU.csv
+        Get-ADUser -Identity "$user" | Move-ADObject -TargetPath "OU=User Destination,OU=Computers,DC=Domain,DC=com"
+        Write-Host("$user has been disabled and moved to the User Destination OU")
+    }
+    catch{
+        "$user does not exist in Active Directory"
+    }
 }
